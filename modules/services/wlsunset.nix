@@ -105,8 +105,8 @@ in {
         lib.platforms.linux)
 
       {
-        assertion = !(cfg ? sunrise || cfg ? sunset)
-          || !(cfg ? latitude || cfg ? longitude);
+        assertion = (!(cfg ? sunrise || cfg ? sunset))
+          || (!(cfg ? latitude || cfg ? longitude));
         message = ''
           services.wlsunset.latitude and services.wlsunset.longitude must not be set when services.wlsunset.sunrise and/or services.wlsunset.sunset are set.
         '';
