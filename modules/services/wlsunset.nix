@@ -35,6 +35,33 @@ in {
       '';
     };
 
+    sunrise = mkOption {
+      type = types.str;
+      example = "06:30";
+      description = ''
+        Set the time of sunrise manually.
+        Must be specified in <literal>HH:MM</literal> (24-hour clock) format.
+      '';
+    };
+
+    sunset = mkOption {
+      type = types.str;
+      example = "18:30";
+      description = ''
+        Set the time of sunset manually.
+        Must be specified in <literal>HH:MM</literal> (24-hour clock) format.
+      '';
+    };
+
+    duration = mkOption {
+      type = types.ints.unsigned;
+      example = 1800;
+      description = ''
+        Set the duration of the transition time in seconds.
+        Only applicable in manual time mode i.e. when sunset and/or sunrise are set manually.
+      '';
+    };
+
     temperature = {
       day = mkOption {
         type = types.int;
@@ -76,6 +103,14 @@ in {
     assertions = [
       (lib.hm.assertions.assertPlatform "services.wlsunset" pkgs
         lib.platforms.linux)
+
+      {
+        assertion = !(cfg ? sunrise || cfg ? sunset)
+          || !(cfg ? latitude || cfg ? longitude);
+        message = ''
+          services.wlsunset.latitude and services.wlsunset.longitude must not be set when services.wlsunset.sunrise and/or services.wlsunset.sunset are set.
+        '';
+      }
     ];
 
     systemd.user.services.wlsunset = {
@@ -86,9 +121,13 @@ in {
 
       Service = {
         ExecStart = let
-          args = [
+          args = (if (cfg.sunrise || cfg.sunset) then [
+            "-S ${cfg.sunrise}"
+            "-s ${cfg.sunset}"
+          ] else [
             "-l ${cfg.latitude}"
             "-L ${cfg.longitude}"
+          ]) ++ [
             "-t ${toString cfg.temperature.night}"
             "-T ${toString cfg.temperature.day}"
             "-g ${cfg.gamma}"
