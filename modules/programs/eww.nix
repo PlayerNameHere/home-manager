@@ -98,16 +98,10 @@ in {
 
   config = mkIf cfg.enable (mkMerge [
     {
-      assertions =
-        let message = "You can have either yuck & scss or configDir enabled";
-        in [
+      assertions = [
           {
-            assertion = !(cfg.scssConfig == null && cfg.configDir == null);
-            inherit message;
-          }
-          {
-            assertion = !(cfg.yuckConfig == null && cfg.configDir == null);
-            inherit message;
+            assertion = !(cfg.scssConfig == null && cfg.configDir == null) or !(cfg.yuckConfig == null && cfg.configDir == null);
+            message = "You can have either yuck & scss or configDir enabled"
           }
         ];
 
