@@ -100,8 +100,8 @@ in {
     {
       assertions = [
           {
-            assertion = !(cfg.scssConfig == null && cfg.configDir == null) or !(cfg.yuckConfig == null && cfg.configDir == null);
-            message = "You can have either yuck & scss or configDir enabled"
+            assertion = !(cfg.scssConfig == null && cfg.configDir == null) || !(cfg.yuckConfig == null && cfg.configDir == null);
+            message = "You can have either yuck & scss or configDir enabled";
           }
         ];
 
