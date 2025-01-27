@@ -6,10 +6,11 @@ let
   cfg = config.programs.zed-editor;
   jsonFormat = pkgs.formats.json { };
 
-  mergedSettings = cfg.userSettings // {
-    # this part by @cmacrae
-    auto_install_extensions = lib.genAttrs cfg.extensions (_: true);
-  };
+  mergedSettings = cfg.userSettings
+    // (lib.optionalAttrs (builtins.length cfg.extensions > 0) {
+      # this part by @cmacrae
+      auto_install_extensions = lib.genAttrs cfg.extensions (_: true);
+    });
 in {
   meta.maintainers = [ hm.maintainers.libewa ];
 
@@ -21,6 +22,13 @@ in {
         "Zed, the high performance, multiplayer code editor from the creators of Atom and Tree-sitter";
 
       package = mkPackageOption pkgs "zed-editor" { };
+
+      extraPackages = mkOption {
+        type = with types; listOf package;
+        default = [ ];
+        example = literalExpression "[ pkgs.nixd ]";
+        description = "Extra packages available to Zed.";
+      };
 
       userSettings = mkOption {
         type = jsonFormat.type;
@@ -76,7 +84,22 @@ in {
   };
 
   config = mkIf cfg.enable {
-    home.packages = [ cfg.package ];
+    home.packages = if cfg.extraPackages != [ ] then
+      [
+        (pkgs.symlinkJoin {
+          name =
+            "${lib.getName cfg.package}-wrapped-${lib.getVersion cfg.package}";
+          paths = [ cfg.package ];
+          preferLocalBuild = true;
+          nativeBuildInputs = [ pkgs.makeWrapper ];
+          postBuild = ''
+            wrapProgram $out/bin/zeditor \
+              --suffix PATH : ${lib.makeBinPath cfg.extraPackages}
+          '';
+        })
+      ]
+    else
+      [ cfg.package ];
 
     xdg.configFile."zed/settings.json" = (mkIf (mergedSettings != { }) {
       source = jsonFormat.generate "zed-user-settings" mergedSettings;
