@@ -100,8 +100,8 @@ in {
     {
       assertions = [
           {
-            assertion = !(cfg.scssConfig == null && cfg.configDir == null) || !(cfg.yuckConfig == null && cfg.configDir == null);
-            message = "You can have either yuck & scss or configDir enabled";
+            assertion = cfg.configDir != null && (cfg.scssConfig != null || cfg.yuckConfig != null);
+            message = "You cannot specify `programs.eww.yuckConfig` and `programs.eww.scssConfig` if you have specified `programs.eww.configDir`";
           }
         ];
 
@@ -126,12 +126,11 @@ in {
       '';
     }
 
-    (mkIf cfg.configDir
-      == null { xdg.configFile."eww".source = cfg.configDir; })
+    (mkIf (cfg.configDir != null) { xdg.configFile."eww".source = cfg.configDir; })
 
-    (mkIf cfg.yuckConfig == null { xdg.configFile."eww/eww.yuck".text = cfg.yuckConfig; })
+    (mkIf (cfg.yuckConfig != null) { xdg.configFile."eww/eww.yuck".text = cfg.yuckConfig; })
 
-    (mkIf cfg.scssConfig == null { xdg.configFile."eww/eww.scss".text = cfg.scssConfig; })
+    (mkIf (cfg.scssConfig != null) { xdg.configFile."eww/eww.scss".text = cfg.scssConfig; })
 
     (mkIf cfg.systemd.enable {
       systemd.user.services.eww = {
@@ -143,9 +142,9 @@ in {
         };
 
         Service = {
-          ExecStart = "${cfg.package} daemon --no-daemonize";
-          ExecStop = "${cfg.package} kill";
-          ExecReload = "${cfg.package} reload";
+          ExecStart = "${ewwCmd} daemon --no-daemonize";
+          ExecStop = "${ewwCmd} kill";
+          ExecReload = "${ewwCmd} reload";
         };
 
         Install = { WantedBy = [ cfg.systemd.target ]; };

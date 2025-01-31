@@ -5,7 +5,7 @@
     programs.eww = {
       enable = true;
       systemd.enable = true;
-      configYuck = ''
+      yuckConfig = ''
         (defwindow example
              :monitor 0
              :geometry (geometry :x "0%"
@@ -19,7 +19,7 @@
              :wm-ignore false
           "example content")
       '';
-      configScss = ''
+      scssConfig = ''
         window {
           background: pink;
         }
