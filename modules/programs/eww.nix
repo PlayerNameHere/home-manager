@@ -100,7 +100,7 @@ in {
     {
       assertions = [
           {
-            assertion = cfg.configDir != null && (cfg.scssConfig != null || cfg.yuckConfig != null);
+            assertion = cfg.configDir == null || (cfg.scssConfig == null && cfg.yuckConfig == null);
             message = "You cannot specify `programs.eww.yuckConfig` and `programs.eww.scssConfig` if you have specified `programs.eww.configDir`";
           }
         ];
